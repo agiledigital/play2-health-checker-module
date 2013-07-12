@@ -28,7 +28,7 @@ And the same file to add the local Ivy repository:
     resolvers += Resolver.url("Local Ivy", new URL("file:///Users/dd3/.ivy2/local/"))(Resolver.ivyStylePatterns)
   )
 ```
-Replace /Users/dd3 with the lcoation that you noted when installing the plugin.
+Replace /Users/dd3 with the location that you noted when installing the plugin.
 
 Edit <code>conf/play.plugins</code> to add the dependency:
 ```scala
