@@ -2,13 +2,13 @@ import sbt._
 import sbt.Keys._
 
 object BuildSettings {
-  val buildVersion = "1.0-SNAPSHOT"
+  val buildVersion = "1.0"
 
   val buildSettings = Defaults.defaultSettings ++ Seq(
     organization := "au.com.agiledigital",
     version := buildVersion,
-    scalaVersion := "2.10.0",
-    crossScalaVersions := Seq("2.10.0"),
+    scalaVersion := "2.11.1",
+    crossScalaVersions := Seq("2.10", "2.11"),
     crossVersion := CrossVersion.binary,
     shellPrompt := ShellPrompt.buildShellPrompt)
 }
@@ -46,8 +46,21 @@ object HealthCheckerBuild extends Build {
     "Play2-Health-Checker",
     file("."),
     settings = buildSettings ++ Seq(
+      publishMavenStyle := true,
+      // To publish, put these credentials in ~/.m2/credentials
+      //credentials += Credentials("Sonatype Nexus Repository Manager", "nexus.agiledigital.com.au", "****", "****"),
+      credentials += Credentials(Path.userHome / ".m2" / ".credentials"),
+      publishTo := {
+          val nexus = "http://nexus.agiledigital.com.au/nexus/"
+          if (version.value.trim.endsWith("SNAPSHOT")) {
+              Some("snapshots" at nexus + "content/repositories/snapshots")
+          } else {
+              Some("releases"  at nexus + "content/repositories/releases")
+          }
+      },
       resolvers := Seq(
-        "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"),
+        "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/maven-releases/"),
       libraryDependencies ++= Seq(
-        "play" %% "play" % "2.1.0" cross CrossVersion.binary)))
+        "com.typesafe.play" %% "play-jdbc" % "2.3.3" cross CrossVersion.binary exclude("org.scala-stm", "scala-stm_2.10.0"),
+        "com.typesafe.play" %% "play" % "2.3.3" cross CrossVersion.binary exclude("org.scala-stm", "scala-stm_2.10.0"))))
 }

@@ -1,10 +1,6 @@
 package au.com.agiledigital.healthchecker
 
 import play.api._
-import play.libs.Akka
-import scala.concurrent.duration.FiniteDuration
-import java.util.concurrent.TimeUnit
-import play.api.libs.concurrent.Execution.Implicits._
 
 class HealthCheckerPlugin(app: Application) extends Plugin {
 
@@ -21,7 +17,7 @@ class HealthCheckerPlugin(app: Application) extends Plugin {
     maybeHealthCheckConfiguration match {
       case Some(healthCheckConfiguration) => {
         Logger.info("Health check subsystem loading from configuration [" + healthCheckConfiguration + "].")
-        val healthCheckers = HealthCheckFactory.processConfiguration(healthCheckConfiguration)
+        val healthCheckers = HealthCheckFactory.processConfiguration(healthCheckConfiguration, app)
         this.healthCheckerManager = new HealthCheckManager(healthCheckers)
       }
       case None => {

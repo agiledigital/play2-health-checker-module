@@ -1,12 +1,9 @@
 package au.com.agiledigital.healthchecker
 
-import scala.Option.option2Iterable
-import scala.reflect.api.Mirror
-import scala.reflect.runtime.universe.nme
-import scala.reflect.runtime.currentMirror
+import play.api.{Application, Configuration, Logger}
 
-import play.api.Configuration
-import play.api.Logger
+import scala.Option.option2Iterable
+import scala.util.control.NonFatal
 
 /**
  * Creates health checkers.
@@ -22,11 +19,11 @@ object HealthCheckFactory {
    *
    * @return the created and configured health checkers.
    */
-  def processConfiguration(configuration: Configuration): Iterable[HealthChecker] = {
+  def processConfiguration(configuration: Configuration, application: Application): Iterable[HealthChecker] = {
     for (
       key <- configuration.subKeys;
       config <- configuration.getConfig(key);
-      checker <- initChecker(key, config)
+      checker <- initChecker(key, config, application)
     ) yield checker
   }
 
@@ -39,10 +36,10 @@ object HealthCheckFactory {
    * @pre config contains a key "provider" that resolves to the class name of a
    *      [[HealthChecker]] implementation.
    */
-  private def initChecker(name: String, config: Configuration): Option[HealthChecker] = {
+  private def initChecker(name: String, config: Configuration, application: Application): Option[HealthChecker] = {
     config.getString("provider") match {
       case Some(clazzName) => {
-        createChecker(clazzName, name, config)
+        createChecker(clazzName, name, config, application)
       }
       case _ => {
         val message = "No provider name specified in [%s]." format config
@@ -59,28 +56,24 @@ object HealthCheckFactory {
    * If the checker can not be instantiated, a checker will be returned that
    * will publish the details of the failure.
    */
-  private def createChecker(clazzName: String, keyName: String, config: Configuration): Option[HealthChecker] = {
+  private def createChecker(clazzName: String, keyName: String, config: Configuration, application: Application): Option[HealthChecker] = {
     try {
       val frequency = config.getMilliseconds("frequency").getOrElse(DEFAULT_FREQUENCY)
 
       val isCritical = config.getBoolean("critical").getOrElse(true)
 
-      val m = scala.reflect.runtime.universe.runtimeMirror(getClass.getClassLoader)
-      val providerClazz = m.staticClass(clazzName)
+      val providerClazz: Class[_] = Class.forName(clazzName, true, application.classloader)
 
-      val classMirror = currentMirror.reflectClass(providerClazz)
+      val constructor = providerClazz.getConstructors()(0)
 
-      val providerConstructor = providerClazz.toType.declaration(nme.CONSTRUCTOR).asMethod
-
-      val provider = classMirror.
-        reflectConstructor(providerConstructor)(config, frequency: java.lang.Long, isCritical: java.lang.Boolean).asInstanceOf[HealthChecker]
+      val provider = constructor.newInstance(config, frequency: java.lang.Long, isCritical: java.lang.Boolean).asInstanceOf[HealthChecker]
 
       Some(provider)
     }
     catch {
-      case t: Throwable => {
+      case NonFatal(e) => {
         val message = "No valid constructor found for [%s] in [%s]." format (clazzName, config)
-        val error = config.reportError("provider", message, Some(t))
+        val error = config.reportError("provider", message, Some(e))
         Logger.error(message, error)
         Some(new BadConfigurationHealthChecker(keyName, message, Some(error)))
       }
