@@ -16,7 +16,7 @@ First, edit <code>build.sbt</code> to add the dependency:
 ```scala
   libraryDependencies ++= Seq(
     ...
-    "au.com.agiledigital" %% "play2-health-checker" % "4.0.0"
+    "au.com.agiledigital" %% "play2-health-checker" % "5.0.0"
     ...
   )
 ```
