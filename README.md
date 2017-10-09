@@ -1,5 +1,6 @@
 play2-health-checker-module
 ===========================
+[![Build Status](https://travis-ci.org/agiledigital/play2-health-checker-module.svg?branch=master)](https://travis-ci.org/agiledigital/play2-health-checker-module)
 
 To install locally
 ------------------
@@ -15,7 +16,7 @@ First, edit <code>build.sbt</code> to add the dependency:
 ```scala
   libraryDependencies ++= Seq(
     ...
-    "au.com.agiledigital" %% "play2-health-checker" % "3.0-SNAPSHOT"
+    "au.com.agiledigital" %% "play2-health-checker" % "4.0.0"
     ...
   )
 ```
