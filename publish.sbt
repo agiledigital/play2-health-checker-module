@@ -24,10 +24,6 @@ pomExtra in Global := {
       <developerConnection>scm:git:git@github.com:agiledigital/play2-health-checker-module</developerConnection>
       <url>github.com/agiledigital/play2-health-checker-module</url>
     </scm>
-    <organization>
-      <name>Agile Digital</name>
-      <url>https://agiledigital.com.au/</url>
-    </organization>
     <developers>
       <developer>
         <id>info@agiledigital.com.au</id>
